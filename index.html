@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sahil Upadhyay — whoami</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap');
+
+  :root{
+    --void: #090c0a;
+    --surface: #101512;
+    --surface-2: #151b17;
+    --line: #23312a;
+    --green: #35ff9c;
+    --green-dim: #1c8a58;
+    --amber: #ffb020;
+    --text: #d9f5e6;
+    --text-dim: #6b8a79;
+    --danger: #ff5f56;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--void);
+    color:var(--text);
+    font-family:'JetBrains Mono', monospace;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+
+  canvas#rain{
+    position:fixed; inset:0; z-index:0; opacity:0.10; pointer-events:none;
+  }
+
+  a{ color:inherit; text-decoration:none; }
+
+  ::selection{ background:var(--green); color:var(--void); }
+
+  :focus-visible{
+    outline:2px solid var(--amber);
+    outline-offset:3px;
+  }
+
+  /* ---------- Terminal chrome ---------- */
+  .titlebar{
+    position:sticky; top:0; z-index:50;
+    background:rgba(9,12,10,0.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  .titlebar-inner{
+    max-width:1000px; margin:0 auto; padding:12px 20px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px; flex-wrap:wrap;
+  }
+  .dots{ display:flex; gap:7px; }
+  .dot{ width:11px; height:11px; border-radius:50%; }
+  .dot.r{ background:#ff5f56; }
+  .dot.y{ background:#ffbd2e; }
+  .dot.g{ background:#27c93f; }
+  .path{ color:var(--text-dim); font-size:0.82rem; }
+  nav{ display:flex; gap:18px; font-size:0.82rem; flex-wrap:wrap; }
+  nav a{ color:var(--text-dim); transition:color .15s; white-space:nowrap; }
+  nav a:hover, nav a:focus-visible{ color:var(--green); }
+  nav a::before{ content:'--'; color:var(--green-dim); margin-right:2px; }
+
+  /* ---------- Layout ---------- */
+  main{ position:relative; z-index:1; max-width:1000px; margin:0 auto; padding:0 20px; }
+
+  section{ padding:64px 0; border-bottom:1px dashed var(--line); }
+  section:last-of-type{ border-bottom:none; }
+
+  .cmd{
+    color:var(--green);
+    font-size:0.95rem;
+    margin-bottom:22px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .cmd::before{ content:'$'; color:var(--amber); }
+  .cmd .cursor{
+    display:inline-block; width:8px; height:16px; background:var(--green);
+    animation:blink 1s steps(1) infinite;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  h2.section-title{
+    font-size:1rem; letter-spacing:0.06em; color:var(--text-dim);
+    text-transform:uppercase; margin-bottom:4px;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{ padding-top:56px; padding-bottom:56px; border-bottom:1px dashed var(--line); }
+  .prompt-line{ color:var(--text-dim); font-size:0.85rem; margin-bottom:6px; }
+  .prompt-line span.user{ color:var(--green); }
+  .prompt-line span.at{ color:var(--text-dim); }
+  .prompt-line span.host{ color:var(--amber); }
+
+  .hero h1{
+    font-size:clamp(2rem, 6vw, 3.4rem);
+    font-weight:800;
+    letter-spacing:-0.01em;
+    margin:14px 0 8px;
+  }
+  .hero h1 .bracket{ color:var(--green-dim); }
+  .typed-role{
+    font-size:clamp(1rem, 2.6vw, 1.3rem);
+    color:var(--green);
+    min-height:1.6em;
+    margin-bottom:22px;
+  }
+  .typed-role .cursor{
+    display:inline-block; width:9px; height:1.1em; background:var(--green);
+    vertical-align:text-bottom; margin-left:2px; animation:blink 1s steps(1) infinite;
+  }
+
+  .hero-desc{ color:var(--text-dim); max-width:560px; margin-bottom:28px; font-size:0.95rem; }
+  .hero-desc b{ color:var(--text); font-weight:500; }
+
+  .hero-ctas{ display:flex; gap:14px; flex-wrap:wrap; }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:12px 20px; font-family:inherit; font-size:0.85rem;
+    border:1px solid var(--green-dim); border-radius:2px;
+    transition:all .15s;
+  }
+  .btn.primary{ background:var(--green); color:var(--void); font-weight:700; border-color:var(--green); }
+  .btn.primary:hover, .btn.primary:focus-visible{ background:#5fffb8; }
+  .btn.ghost{ color:var(--text); }
+  .btn.ghost:hover, .btn.ghost:focus-visible{ border-color:var(--green); color:var(--green); }
+
+  /* ---------- About ---------- */
+  .about-box{
+    background:var(--surface); border:1px solid var(--line); border-radius:4px;
+    padding:24px; font-size:0.92rem; color:var(--text-dim);
+  }
+  .about-box p{ margin-bottom:12px; }
+  .about-box p:last-child{ margin-bottom:0; }
+  .about-box b{ color:var(--text); }
+  .field-line{ margin-top:16px; font-size:0.82rem; }
+  .field-line span.key{ color:var(--amber); }
+
+  /* ---------- Skills ---------- */
+  .skill-groups{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; }
+  .skill-cat{ background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:18px 20px; }
+  .skill-cat h3{ font-size:0.78rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:12px; }
+  .skill-cat h3::before{ content:'▸ '; color:var(--green); }
+  .skill-tags{ display:flex; flex-wrap:wrap; gap:8px; }
+  .skill-tag{
+    font-size:0.8rem; padding:5px 10px; border:1px solid var(--line);
+    border-radius:2px; color:var(--text);
+  }
+  .skill-tag::before{ content:'[OK] '; color:var(--green); }
+
+  /* ---------- Projects ---------- */
+  .project-list{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:18px; }
+  .project-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:4px;
+    padding:22px; transition:border-color .15s, transform .15s;
+  }
+  .project-card:hover{ border-color:var(--green-dim); transform:translateY(-2px); }
+  .project-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+  .project-head h3{ font-size:1.02rem; color:var(--text); }
+  .project-status{ font-size:0.7rem; color:var(--green); border:1px solid var(--green-dim); padding:2px 7px; border-radius:2px; }
+  .project-card p{ color:var(--text-dim); font-size:0.88rem; margin-bottom:14px; }
+  .project-stack{ display:flex; flex-wrap:wrap; gap:6px; }
+  .stack-chip{ font-size:0.72rem; color:var(--text-dim); border:1px dashed var(--line); padding:3px 8px; border-radius:2px; }
+
+  /* ---------- Education / Learning ---------- */
+  .log-lines{ display:flex; flex-direction:column; gap:10px; font-size:0.88rem; }
+  .log-line{ display:flex; gap:12px; color:var(--text-dim); }
+  .log-line .tag{ color:var(--green); flex-shrink:0; }
+  .log-line b{ color:var(--text); font-weight:500; }
+
+  /* ---------- Contact ---------- */
+  .scan-box{
+    background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:24px;
+  }
+  .scan-row{
+    display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px dashed var(--line);
+    font-size:0.88rem; flex-wrap:wrap; gap:6px;
+  }
+  .scan-row:last-child{ border-bottom:none; }
+  .scan-row .k{ color:var(--text-dim); }
+  .scan-row .v{ color:var(--green); }
+  .scan-row a.v:hover, .scan-row a.v:focus-visible{ color:var(--amber); }
+
+  footer{
+    text-align:center; padding:32px 20px 48px; color:var(--text-dim); font-size:0.8rem; position:relative; z-index:1;
+  }
+  footer .cursor{ display:inline-block; width:7px; height:13px; background:var(--green); vertical-align:middle; margin-left:4px; animation:blink 1s steps(1) infinite; }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .cursor{ animation:none; }
+    canvas#rain{ display:none; }
+  }
+
+  @media (max-width:600px){
+    nav{ display:none; }
+    section{ padding:44px 0; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="rain"></canvas>
+
+<div class="titlebar">
+  <div class="titlebar-inner">
+    <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+    <span class="path">sahil@vbspu:~$ portfolio --open</span>
+    <nav>
+      <a href="#about">about</a>
+      <a href="#skills">skills</a>
+      <a href="#projects">projects</a>
+      <a href="#education">education</a>
+      <a href="#contact">contact</a>
+    </nav>
+  </div>
+</div>
+
+<main>
+
+  <section class="hero">
+    <div class="prompt-line"><span class="user">sahil</span><span class="at">@</span><span class="host">vbspu</span>:~$ whoami</div>
+    <h1><span class="bracket">&gt;</span> Sahil Upadhyay</h1>
+    <div class="typed-role" id="typedRole"></div>
+    <p class="hero-desc">
+      First-year <b>BCA</b> student at <b>VBSPU, Jaunpur</b>, learning to break things safely and build things properly.
+      Currently going deep on <b>Python</b> and the fundamentals of <b>ethical hacking</b>, alongside web development with <b>JavaScript</b> and <b>Linux</b>.
+    </p>
+    <div class="hero-ctas">
+      <a href="#projects" class="btn primary">./view_projects.sh</a>
+      <a href="#contact" class="btn ghost">$ contact --me</a>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="cmd">cat about.txt<span class="cursor"></span></div>
+    <div class="about-box">
+      <p>I'm <b>Sahil</b>, based in Jaunpur, Uttar Pradesh — currently in my first year of BCA under the DCSE department at VBSPU. I'm most drawn to the security side of computing: how systems break, and how to make them harder to break.</p>
+      <p>Outside of coursework, I spend time on <b>Python</b> for scripting and automation, sharpening my <b>JavaScript</b> and <b>HTML</b> for the web, and getting comfortable in <b>Linux</b> — the everyday toolkit of an ethical hacker.</p>
+      <div class="field-line"><span class="key">status:</span> open to internships in software &amp; web development</div>
+      <div class="field-line"><span class="key">focus:</span> ethical hacking, web development, problem solving</div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="cmd">cat skills.txt<span class="cursor"></span></div>
+    <div class="skill-groups">
+      <div class="skill-cat">
+        <h3>Languages</h3>
+        <div class="skill-tags">
+          <span class="skill-tag">Python</span>
+          <span class="skill-tag">JavaScript</span>
+        </div>
+      </div>
+      <div class="skill-cat">
+        <h3>Web</h3>
+        <div class="skill-tags">
+          <span class="skill-tag">HTML</span>
+          <span class="skill-tag">CSS</span>
+        </div>
+      </div>
+      <div class="skill-cat">
+        <h3>Systems &amp; Tools</h3>
+        <div class="skill-tags">
+          <span class="skill-tag">Linux</span>
+          <span class="skill-tag">Git</span>
+          <span class="skill-tag">GitHub</span>
+        </div>
+      </div>
+      <div class="skill-cat">
+        <h3>Other</h3>
+        <div class="skill-tags">
+          <span class="skill-tag">SQL</span>
+          <span class="skill-tag">Cybersecurity Basics</span>
+          <span class="skill-tag">OOP Concepts</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="cmd">ls -la projects/<span class="cursor"></span></div>
+    <div class="project-list">
+      <div class="project-card">
+        <div class="project-head">
+          <h3>Space Shooter Game</h3>
+          <span class="project-status">live</span>
+        </div>
+        <p>A browser-based arcade shooter built as a web app — dark UI, player movement, enemy waves, and score tracking.</p>
+        <div class="project-stack">
+          <span class="stack-chip">JavaScript</span>
+          <span class="stack-chip">HTML</span>
+          <span class="stack-chip">CSS</span>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="project-head">
+          <h3>Portfolio Website</h3>
+          <span class="project-status">v2</span>
+        </div>
+        <p>Personal portfolio to showcase projects, skills, and learning journey — this page is the latest version of it.</p>
+        <div class="project-stack">
+          <span class="stack-chip">HTML</span>
+          <span class="stack-chip">CSS</span>
+          <span class="stack-chip">JavaScript</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="education">
+    <div class="cmd">cat education.log<span class="cursor"></span></div>
+    <div class="log-lines">
+      <div class="log-line"><span class="tag">[EDU]</span> <span><b>Bachelor of Computer Applications (BCA)</b> — Veer Bahadur Singh Purvanchal University, Jaunpur. First year, first semester. Expected graduation 2028.</span></div>
+      <div class="log-line"><span class="tag">[DEPT]</span> <span>DCSE — Department of Computer Science &amp; Engineering</span></div>
+      <div class="log-line"><span class="tag">[LEARN]</span> <span>GUVI x HCL — structured tech learning track</span></div>
+      <div class="log-line"><span class="tag">[PRACTICE]</span> <span>Building hands-on ethical hacking skills toward platforms like TryHackMe and HackTheBox</span></div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="cmd">nmap --scan contact.host<span class="cursor"></span></div>
+    <div class="scan-box">
+      <div class="scan-row"><span class="k">email</span><a class="v" href="mailto:sahilu476@gmail.com">sahilu476@gmail.com</a></div>
+      <div class="scan-row"><span class="k">phone</span><a class="v" href="tel:+917080356532">+91 70803 56532</a></div>
+      <div class="scan-row"><span class="k">location</span><span class="v">Jaunpur, Uttar Pradesh, India</span></div>
+      <div class="scan-row"><span class="k">status</span><span class="v">open to internships</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  sahil@vbspu:~$ end_of_file<span class="cursor"></span>
+</footer>
+
+<script>
+  // Typed role effect
+  const roles = ["Ethical Hacker", "Python Developer", "BCA Student @ VBSPU", "Cybersecurity Learner"];
+  const el = document.getElementById('typedRole');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (reduceMotion) {
+    el.textContent = roles[0];
+  } else {
+    let roleIdx = 0, charIdx = 0, deleting = false;
+    function tick(){
+      const current = roles[roleIdx];
+      if(!deleting){
+        charIdx++;
+        el.innerHTML = current.slice(0, charIdx) + '<span class="cursor"></span>';
+        if(charIdx === current.length){ deleting = true; setTimeout(tick, 1400); return; }
+      } else {
+        charIdx--;
+        el.innerHTML = current.slice(0, charIdx) + '<span class="cursor"></span>';
+        if(charIdx === 0){ deleting = false; roleIdx = (roleIdx+1) % roles.length; }
+      }
+      setTimeout(tick, deleting ? 35 : 70);
+    }
+    tick();
+  }
+
+  // Matrix rain background
+  if (!reduceMotion) {
+    const canvas = document.getElementById('rain');
+    const ctx = canvas.getContext('2d');
+    let w, h, cols, drops;
+    const chars = "01アカサタナハマヤラワSAHILHACK$#";
+
+    function resize(){
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+      cols = Math.floor(w / 16);
+      drops = new Array(cols).fill(1);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    function draw(){
+      ctx.fillStyle = 'rgba(9,12,10,0.08)';
+      ctx.fillRect(0,0,w,h);
+      ctx.fillStyle = '#35ff9c';
+      ctx.font = '14px monospace';
+      for(let i=0;i<drops.length;i++){
+        const text = chars[Math.floor(Math.random()*chars.length)];
+        ctx.fillText(text, i*16, drops[i]*16);
+        if(drops[i]*16 > h && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+      requestAnimationFrame(draw);
+    }
+    draw();
+  }
+</script>
+
+</body>
+</html>
